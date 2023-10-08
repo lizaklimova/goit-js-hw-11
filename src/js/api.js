@@ -17,12 +17,6 @@ export async function getImages(value, page = 1) {
 
     const data = response.data;
 
-    if (!data.hits.length) {
-      Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-    }
-
     return data;
   } catch (error) {
     console.log(error.message);

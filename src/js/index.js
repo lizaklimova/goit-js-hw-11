@@ -1,7 +1,14 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import SimpleLightbox from 'simplelightbox';
+import throttle from 'lodash.throttle';
 import { formRef, galleryRef, loadMoreRef, searchBtn } from './refs';
 import { getImages } from './api';
+import {
+  createMarkup,
+  createMarkupString,
+  resetMarkup,
+  insertMarkup,
+} from './markup';
 
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
@@ -10,50 +17,50 @@ const lightbox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
 
-addClass(loadMoreRef, 'is-hidden');
+// addClass(loadMoreRef, 'is-hidden');
 
 let page;
 let perPage = 40;
 let inputValue = null;
 
 formRef.addEventListener('submit', onSubmitHandler);
-loadMoreRef.addEventListener('click', onLoadMore);
+// loadMoreRef.addEventListener('click', onLoadMore);
+document.addEventListener('scroll', throttle(infiniteScrollHandler, 500));
 
 function onSubmitHandler(event) {
   event.preventDefault();
 
+  disableElement(searchBtn, true);
   resetMarkup(galleryRef);
+  // addClass(loadMoreRef, 'is-hidden');
 
   page = 1;
 
   const input = event.currentTarget.elements.searchQuery;
   inputValue = input.value.trim().toLowerCase();
 
-  if (inputValue === '') {
-    Notify.warning('Enter valid search query!');
-    return;
-  }
-
-  getImages(inputValue)
+  getImages(inputValue, page)
     .then(resp => {
-      disableElement(searchBtn, true);
-      lightbox.refresh();
-      insertMarkup(galleryRef, createMarkup(resp.hits));
-      removeClass(loadMoreRef, 'is-hidden');
-
-      if (page === 1) {
-        Notify.success(`Hooray! We found ${resp.totalHits} images.`);
-      }
-
-      if (galleryRef.childElementCount > resp.totalHits) {
-        addClass(loadMoreRef, 'is-hidden');
+      if (!resp.hits.length) {
         Notify.failure(
-          "We're sorry, but you've reached the end of search results."
+          'Sorry, there are no images matching your search query. Please try again.'
         );
-      }
+      } else if (!inputValue) {
+        Notify.warning('Please, enter valid query!');
+        return;
+      } else {
+        if (resp.hits.length && inputValue) {
+          Notify.info(`Hooray! We found ${resp.totalHits} images.`);
+        }
 
-      if (galleryRef.childElementCount < perPage) {
-        addClass(loadMoreRef, 'is-hidden');
+        insertMarkup(galleryRef, createMarkup(resp.hits));
+        lightbox.refresh();
+
+        // removeClass(loadMoreRef, 'is-hidden');
+
+        checkPagesLeft(resp);
+
+        createSmoothScroll();
       }
     })
     .catch(err => console.log(err))
@@ -64,80 +71,86 @@ function onSubmitHandler(event) {
   event.currentTarget.reset();
 }
 
-function onLoadMore(event) {
-  page += 1;
-
-  disableElement(event.target, true);
-
-  getImages(inputValue, page)
-    .then(resp => {
-      insertMarkup(galleryRef, createMarkup(resp.hits));
-    })
-    .catch(err => console.log(err))
-    .finally(() => disableElement(event.target, false));
+function onLoadMore() {
+  // page += 1;
+  // getImages(inputValue, page)
+  //   .then(resp => {
+  //     createMarkup(resp.hits);
+  //     insertMarkup(galleryRef, createMarkup(resp.hits));
+  //     checkPagesLeft(resp);
+  //   })
+  //   .catch(err => console.log(err));
 }
 
-function createMarkup(pics) {
-  const markup = pics
-    .map(
-      ({
-        webformatURL,
-        largeImageURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) => {
-        return `
-  <div class="photo-card">
-    <a href="${largeImageURL}">
-       <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-    </a>
-  <div class="info">
-    <p class="info-item">
-      <b>Likes</b>
-      ${likes}
-    </p>
-    <p class="info-item">
-      <b>Views</b>
-      ${views}
-    </p>
-    <p class="info-item">
-      <b>Comments</b>
-      ${comments}
-    </p>
-    <p class="info-item">
-      <b>Downloads</b>
-      ${downloads}
-    </p>
-  </div>
-</div>
-    `;
-      }
-    )
-    .join('');
+function infiniteScrollHandler(totHits) {
+  if (
+    window.scrollY + window.innerHeight >=
+    document.documentElement.scrollHeight
+  ) {
+    page += 1;
 
-  lightbox.refresh();
-  return markup;
+    getImages(inputValue, page)
+      .then(resp => {
+        createMarkup(resp.hits);
+
+        insertMarkup(galleryRef, createMarkup(resp.hits));
+
+        checkPagesLeft(resp);
+      })
+      .catch(err => console.log(err));
+  }
 }
 
-function insertMarkup(container, markup) {
-  container.insertAdjacentHTML('beforeend', markup);
+function checkPagesLeft(response) {
+  const availablePages = Math.ceil(response.totalHits / perPage);
+  if (availablePages === page) {
+    // addClass(loadMoreRef, 'is-hidden');
+    Notify.failure(
+      "We're sorry, but you've reached the end of search results."
+    );
+    return;
+  }
 }
 
-function resetMarkup(el) {
-  el.innerHTML = '';
-}
+// function removeClass(el, cl) {
+//   el.classList.remove(cl);
+// }
 
-function removeClass(el, cl) {
-  el.classList.remove(cl);
-}
-
-function addClass(el, cl) {
-  el.classList.add(cl);
-}
+// function addClass(el, cl) {
+//   el.classList.add(cl);
+// }
 
 function disableElement(el, value) {
   el.disabled = value;
 }
+
+function createSmoothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
+}
+
+//~ Load more button
+// function onLoadMore() {
+//   page += 1;
+
+//   getImages(inputValue, page)
+//     .then(resp => {
+//       disableElement(onLoadMore, true);
+
+//       createMarkup(resp.hits);
+
+//       insertMarkup(galleryRef, createMarkup(resp.hits));
+
+//       checkPagesLeft(resp);
+
+//       createSmoothScroll();
+//     })
+//     .catch(err => console.log(err))
+//     .finally(() => disableElement(onLoadMore, false));
+// }
