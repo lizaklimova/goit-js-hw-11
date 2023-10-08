@@ -15,15 +15,15 @@ export async function getImages(value, page = 1) {
       },
     });
 
-    const images = response.data.hits;
+    const data = response.data;
 
-    if (!images.length) {
+    if (!data.hits.length) {
       Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
       );
     }
 
-    return images;
+    return data;
   } catch (error) {
     console.log(error.message);
   }
