@@ -19,7 +19,6 @@ body {
   letter-spacing: -0.04em;
   color: #141414;
   background-color: #f5eed0;
-  overflow-x: hidden;
 }
 
 button {
@@ -100,6 +99,7 @@ input {
   gap: 12px;
   padding-left: 20px;
   padding-right: 20px;
+  /* margin-bottom: 50px; */
 }
 
 .photo-card {
@@ -144,197 +144,51 @@ input {
   transition: all 300ms ease-in-out;
 }
 
-@media screen and (min-width: 768px) {
-  .photo-card {
-    width: calc((100% - 12px) / 2);
-  }
-
-  .info {
-    height: 100px;
-    gap: 20px;
-  }
-}
-
-@media screen and (min-width: 1280px) {
-  .photo-card {
-    width: calc((100% - 36px) / 4);
-  }
-
-  .info {
-    gap: 30px;
-  }
-}
-
-/* * {
-  box-sizing: border-box;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p {
-  margin: 0;
-}
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: -0.04em;
-  color: #141414;
-  background-color: #f5eed0;
-  overflow-x: hidden;
-}
-
-a {
-  text-decoration: none;
-}
-
-ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-button {
-  font-family: inherit;
-  border: none;
-  cursor: pointer;
-}
-
-img {
+.loader {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   display: block;
-}
-
-input {
-  font-family: inherit;
-}
-
-.is-hidden {
-  display: none;
-}
-
-.search-form {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  height: 50px;
-  padding: 10px;
-  margin-bottom: 30px;
-  position: sticky;
-  top: -5;
-  background-color: rgb(221, 210, 188);
-  z-index: 1;
-}
-
-.search-form input {
-  min-width: 380px;
-  border: 3px solid rgba(0, 162, 255, 0.637);
-  border-radius: 10px;
-  padding: 9px;
-}
-
-.search-form input::placeholder {
-  color: black;
-}
-
-.search-form input:focus {
-  outline: none;
-}
-
-.search-form input:focus::placeholder {
-  color: #1414144f;
-}
-
-.search-form button {
-  min-width: 80px;
-  border-radius: 10px;
-  background-color: rgba(154, 212, 247, 0.637);
-  transition: all 300ms ease-in-out;
-}
-
-.search-form button:disabled {
-  cursor: not-allowed;
-  background-color: #1414144f;
-  border: 3px solid #14141478;
-}
-
-.search-form button:hover,
-.load-more:hover {
-  box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.24),
-    0 17px 50px 0 rgba(0, 0, 0, 0.19);
-}
-
-.gallery {
+  margin: 30px auto;
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding-left: 20px;
-  padding-right: 20px;
+  color: rgb(154, 211, 247);
+  animation: animloader 1s linear infinite alternate;
 }
 
-.load-more {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 150px;
-  height: 30px;
-  margin-top: 50px;
-  border-radius: 10px;
-  background-color: rgba(154, 212, 247, 0.637);
-  transition: all 300ms ease-in-out;
+@keyframes animloader {
+  0% {
+    box-shadow: -38px -6px, -14px 6px, 14px -6px;
+  }
+  33% {
+    box-shadow: -38px 6px, -14px -6px, 14px 6px;
+  }
+  66% {
+    box-shadow: -38px -6px, -14px 6px, 14px -6px;
+  }
+  100% {
+    box-shadow: -38px 6px, -14px -6px, 14px 6px;
+  }
 }
 
-.photo-card {
-  background-color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: column;
-  width: calc((100% - 12px));
-  height: 300px;
-  outline: 3px solid #14141478;
-}
-
-.image {
-  width: 100%;
-  height: 300px;
-  object-fit: cover;
-  overflow: hidden;
-}
-.info {
+.scroll-up-button {
+  width: 70px;
   height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  gap: 10px;
+  border-radius: 50%;
+  background-color: rgba(154, 212, 247, 0.637);
+  border: 3px solid #fff;
+  font-size: 25px;
+  position: fixed;
+  bottom: 50px;
+  right: 20px;
+  transition: all 300ms ease;
 }
 
-.info-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+.scroll-up-button:hover {
+  transform: scale(1.1);
 }
-
 @media screen and (min-width: 768px) {
   .photo-card {
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-direction: column;
-    height: 300px;
     width: calc((100% - 12px) / 2);
-    outline: 3px solid #14141478;
   }
 
   .info {
@@ -351,4 +205,4 @@ input {
   .info {
     gap: 30px;
   }
-} */
+}

@@ -1,7 +1,7 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import SimpleLightbox from 'simplelightbox';
 import throttle from 'lodash.throttle';
-import { formRef, galleryRef, loadMoreRef, searchBtn } from './refs';
+import { formRef, galleryRef, loadMoreRef, searchBtn, loaderRef } from './refs';
 import { getImages } from './api';
 import {
   createMarkup,
@@ -18,10 +18,12 @@ const lightbox = new SimpleLightbox('.gallery a', {
 });
 
 // addClass(loadMoreRef, 'is-hidden');
+removeClass(loaderRef, 'loader');
 
 let page;
 let perPage = 40;
 let inputValue = null;
+let totalPages;
 
 formRef.addEventListener('submit', onSubmitHandler);
 // loadMoreRef.addEventListener('click', onLoadMore);
@@ -72,38 +74,19 @@ function onSubmitHandler(event) {
 }
 
 function onLoadMore() {
-  // page += 1;
-  // getImages(inputValue, page)
-  //   .then(resp => {
-  //     createMarkup(resp.hits);
-  //     insertMarkup(galleryRef, createMarkup(resp.hits));
-  //     checkPagesLeft(resp);
-  //   })
-  //   .catch(err => console.log(err));
-}
-
-function infiniteScrollHandler(totHits) {
-  if (
-    window.scrollY + window.innerHeight >=
-    document.documentElement.scrollHeight
-  ) {
-    page += 1;
-
-    getImages(inputValue, page)
-      .then(resp => {
-        createMarkup(resp.hits);
-
-        insertMarkup(galleryRef, createMarkup(resp.hits));
-
-        checkPagesLeft(resp);
-      })
-      .catch(err => console.log(err));
-  }
+  getImages(inputValue, page)
+    .then(resp => {
+      createMarkup(resp.hits);
+      insertMarkup(galleryRef, createMarkup(resp.hits));
+      checkPagesLeft(resp);
+    })
+    .catch(err => console.log(err))
+    .finally(() => {});
 }
 
 function checkPagesLeft(response) {
-  const availablePages = Math.ceil(response.totalHits / perPage);
-  if (availablePages === page) {
+  totalPages = Math.ceil(response.totalHits / perPage);
+  if (totalPages <= page) {
     // addClass(loadMoreRef, 'is-hidden');
     Notify.failure(
       "We're sorry, but you've reached the end of search results."
@@ -112,13 +95,30 @@ function checkPagesLeft(response) {
   }
 }
 
-// function removeClass(el, cl) {
-//   el.classList.remove(cl);
-// }
+function infiniteScrollHandler() {
+  const docRect = document.documentElement.getBoundingClientRect();
 
-// function addClass(el, cl) {
-//   el.classList.add(cl);
-// }
+  if (totalPages === 1) return;
+
+  if (docRect.bottom < document.documentElement.clientHeight + 350) {
+    if (totalPages <= page) {
+      removeClass(loaderRef, 'loader');
+      return;
+    }
+
+    addClass(loaderRef, 'loader');
+    page++;
+    onLoadMore();
+  }
+}
+
+export function removeClass(el, cl) {
+  el.classList.remove(cl);
+}
+
+export function addClass(el, cl) {
+  el.classList.add(cl);
+}
 
 function disableElement(el, value) {
   el.disabled = value;
