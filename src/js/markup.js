@@ -13,9 +13,11 @@ export function createMarkupString({
 }) {
   return `
   <div class="photo-card">
-    <a href="${largeImageURL}">
+   <div class="img-container">
+     <a href="${largeImageURL}">
        <img src="${webformatURL}" alt="${tags}" loading="lazy" />
     </a>
+   </div>
   <div class="info">
     <p class="info-item">
       <b>Likes</b>
