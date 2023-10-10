@@ -29,7 +29,7 @@ formRef.addEventListener('submit', onSubmitHandler);
 // loadMoreRef.addEventListener('click', onLoadMore);
 document.addEventListener('scroll', throttle(infiniteScrollHandler, 500));
 
-function onSubmitHandler(event) {
+async function onSubmitHandler(event) {
   event.preventDefault();
 
   disableElement(searchBtn, true);
@@ -41,47 +41,53 @@ function onSubmitHandler(event) {
   const input = event.currentTarget.elements.searchQuery;
   inputValue = input.value.trim().toLowerCase();
 
-  getImages(inputValue, page)
-    .then(resp => {
-      if (!resp.hits.length) {
-        Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-      } else if (!inputValue) {
-        Notify.warning('Please, enter valid query!');
-        return;
-      } else {
-        if (resp.hits.length && inputValue) {
-          Notify.info(`Hooray! We found ${resp.totalHits} images.`);
-        }
+  try {
+    const resp = await getImages(inputValue, page);
 
-        insertMarkup(galleryRef, createMarkup(resp.hits));
-        lightbox.refresh();
+    if (!inputValue) {
+      Notify.warning('Please, enter valid query!');
+      return;
+    }
 
-        // removeClass(loadMoreRef, 'is-hidden');
+    if (!resp.hits.length) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    }
 
-        checkPagesLeft(resp);
+    if (resp.hits.length && inputValue) {
+      Notify.info(`Hooray! We found ${resp.totalHits} images.`);
+    }
 
-        createSmoothScroll();
-      }
-    })
-    .catch(err => console.log(err))
-    .finally(() => {
-      disableElement(searchBtn, false);
-    });
+    insertMarkup(galleryRef, createMarkup(resp.hits));
 
-  event.currentTarget.reset();
+    lightbox.refresh();
+
+    // removeClass(loadMoreRef, 'is-hidden');
+
+    checkPagesLeft(resp);
+
+    createSmoothScroll();
+  } catch (err) {
+    console.log(err);
+  } finally {
+    disableElement(searchBtn, false);
+  }
+
+  formRef.reset();
 }
 
-function onLoadMore() {
-  getImages(inputValue, page)
-    .then(resp => {
-      createMarkup(resp.hits);
-      insertMarkup(galleryRef, createMarkup(resp.hits));
-      checkPagesLeft(resp);
-    })
-    .catch(err => console.log(err))
-    .finally(() => {});
+async function onLoadMore() {
+  try {
+    const resp = await getImages(inputValue, page);
+
+    createMarkup(resp.hits);
+    insertMarkup(galleryRef, createMarkup(resp.hits));
+    checkPagesLeft(resp);
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 function checkPagesLeft(response) {
@@ -100,7 +106,7 @@ function infiniteScrollHandler() {
 
   if (totalPages === 1) return;
 
-  if (docRect.bottom < document.documentElement.clientHeight + 350) {
+  if (docRect.bottom < document.documentElement.clientHeight + 100) {
     if (totalPages <= page) {
       removeClass(loaderRef, 'loader');
       return;
