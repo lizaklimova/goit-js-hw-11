@@ -1,7 +1,3 @@
-* {
-  box-sizing: border-box;
-}
-
 h1,
 h2,
 h3,
@@ -19,6 +15,7 @@ body {
   letter-spacing: -0.04em;
   color: #141414;
   background-color: #f5eed0;
+  margin: 0;
 }
 
 button {
@@ -113,6 +110,10 @@ input {
   height: 300px;
   object-fit: cover;
   transition: all 500ms ease;
+}
+
+.img-blurred {
+  filter: blur(15);
 }
 
 .photo-card a > img:hover {

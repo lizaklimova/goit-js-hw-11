@@ -34,6 +34,7 @@ async function onSubmitHandler(event) {
 
   disableElement(searchBtn, true);
   resetMarkup(galleryRef);
+
   // addClass(loadMoreRef, 'is-hidden');
 
   page = 1;
@@ -61,7 +62,6 @@ async function onSubmitHandler(event) {
     }
 
     insertMarkup(galleryRef, createMarkup(resp.hits));
-
     lightbox.refresh();
 
     // removeClass(loadMoreRef, 'is-hidden');
